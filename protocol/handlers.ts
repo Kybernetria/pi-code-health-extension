@@ -1,4 +1,5 @@
-import type { ProtocolHandler } from "@kyvernitria/pi-protocol-minimal";
+type ProtocolHandler = (input: unknown) => unknown | Promise<unknown>;
+
 import { scanForCandidates } from "../src/slice/scan.js";
 import { diagnoseCandidate } from "../src/slice/diagnose.js";
 import { generateSlicePlan } from "../src/slice/plan.js";
