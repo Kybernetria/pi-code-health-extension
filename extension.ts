@@ -36,15 +36,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * upward resolution through the shared agent-level node_modules.
  */
 function ensureProtocolMinimal(): void {
-  try {
-    _require.resolve("@kyvernitria/pi-protocol-minimal");
-    return;
-  } catch {
-    // Not resolved yet — proceed to install.
-  }
-
   const targetDir = join(__dirname, "node_modules", "@kyvernitria");
   const target = join(targetDir, "pi-protocol-minimal");
+
+  // If the symlink or install already exists, we're done.
+  if (existsSync(target)) return;
 
   // 1) Local repo symlink (development)
   const localRepo = join(homedir(), "Applications", "pi", "pi-protocol", "packages", "pi-protocol-minimal");
