@@ -1,0 +1,132 @@
+{
+  "protocolVersion": "0.2.0",
+  "nodeId": "code_health",
+  "packageId": "pi-code-health-extension",
+  "version": "0.1.0",
+  "purpose": "Read-only TypeScript code health and documentation hygiene analysis for Pi.",
+  "tags": ["code-health", "typescript", "documentation", "read-only"],
+  "provides": [
+    {
+      "name": "slice_scan",
+      "description": "Find TypeScript code smells and refactoring candidates. Read-only; never edits files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rootDir": { "type": "string", "description": "Project root. Defaults to the extension process cwd when omitted." },
+          "files": { "type": "array", "items": { "type": "string" }, "description": "Optional project-relative TypeScript files to scan." },
+          "minSeverity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "smells": { "type": "array", "items": { "type": "string", "enum": ["god_file", "high_complexity", "dead_export", "tight_coupling", "hub_creep", "singleton_utils_file", "trivial_helper"] } },
+          "maxResults": { "type": "number" }
+        }
+      },
+      "outputSchema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["file", "smell", "severity", "metrics", "impactScore"],
+          "properties": {
+            "file": { "type": "string" },
+            "functionName": { "type": "string" },
+            "smell": { "type": "string", "enum": ["god_file", "high_complexity", "dead_export", "tight_coupling", "hub_creep", "singleton_utils_file", "trivial_helper"] },
+            "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+            "metrics": { "type": "object" },
+            "impactScore": { "type": "number" }
+          }
+        }
+      },
+      "execution": { "type": "handler", "handler": "slice_scan" },
+      "effects": ["file_read"]
+    },
+    {
+      "name": "slice_diagnose",
+      "description": "Explain a specific slice_scan candidate in plain language with risk and inspection guidance. Read-only.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["file", "smell", "severity"],
+        "properties": {
+          "file": { "type": "string" },
+          "functionName": { "type": "string" },
+          "smell": { "type": "string", "enum": ["god_file", "high_complexity", "dead_export", "tight_coupling", "hub_creep", "singleton_utils_file", "trivial_helper"] },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "metrics": { "type": "object" },
+          "impactScore": { "type": "number" }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["candidate", "recommendedPattern", "patternSource", "toolSupport", "riskLevel", "blastRadius", "rationale", "inspectBeforeChanging"],
+        "properties": {
+          "candidate": { "type": "object" },
+          "recommendedPattern": { "type": "string" },
+          "patternSource": { "type": "string", "enum": ["builtin"] },
+          "toolSupport": { "type": "array", "items": { "type": "string" } },
+          "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+          "blastRadius": { "type": "number" },
+          "rationale": { "type": "string" },
+          "inspectBeforeChanging": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "execution": { "type": "handler", "handler": "slice_diagnose" },
+      "effects": ["file_read"]
+    },
+    {
+      "name": "slice_plan",
+      "description": "Generate a read-only, ordered refactor plan from a slice_diagnose result.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["candidate", "recommendedPattern", "riskLevel", "rationale"],
+        "properties": {
+          "candidate": { "type": "object" },
+          "recommendedPattern": { "type": "string" },
+          "patternSource": { "type": "string", "enum": ["builtin"] },
+          "toolSupport": { "type": "array", "items": { "type": "string" } },
+          "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+          "blastRadius": { "type": "number" },
+          "rationale": { "type": "string" },
+          "inspectBeforeChanging": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["id", "diagnosis", "steps", "estimatedEffort", "totalBlastRadius", "citations"],
+        "properties": {
+          "id": { "type": "string" },
+          "diagnosis": { "type": "object" },
+          "steps": { "type": "array", "items": { "type": "object" } },
+          "estimatedEffort": { "type": "string", "enum": ["trivial", "small", "medium", "large"] },
+          "totalBlastRadius": { "type": "number" },
+          "citations": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "execution": { "type": "handler", "handler": "slice_plan" },
+      "effects": ["file_read"]
+    },
+    {
+      "name": "doc_hygiene_scan",
+      "description": "Deterministically scan markdown files for stale/archive/review signals. Read-only; never edits files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rootDir": { "type": "string", "description": "Project root. Defaults to the extension process cwd when omitted." },
+          "files": { "type": "array", "items": { "type": "string" }, "description": "Optional project-relative markdown files to scan." },
+          "maxResults": { "type": "number" }
+        }
+      },
+      "outputSchema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["file", "signal", "severity", "reason"],
+          "properties": {
+            "file": { "type": "string" },
+            "signal": { "type": "string", "enum": ["stale", "archive_candidate", "missing_title", "needs_review"] },
+            "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+            "reason": { "type": "string" }
+          }
+        }
+      },
+      "execution": { "type": "handler", "handler": "doc_hygiene_scan" },
+      "effects": ["file_read"]
+    }
+  ]
+}

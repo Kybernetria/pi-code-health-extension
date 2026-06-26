@@ -1,0 +1,33 @@
+{
+  "name": "pi-code-health-extension",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pi extension that finds TypeScript code smells and refactoring candidates without mutating files.",
+  "main": "./extension.ts",
+  "exports": {
+    ".": "./extension.ts",
+    "./slice": "./src/slice/scan.ts",
+    "./protocol/handlers": "./protocol/handlers.ts",
+    "./pi.protocol.json": "./pi.protocol.json"
+  },
+  "pi": {
+    "extensions": [
+      "./extension.ts"
+    ]
+  },
+  "scripts": {
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "latest",
+    "@kyvernitria/pi-protocol-minimal": "file:../../pi-protocol/packages/pi-protocol-minimal",
+    "ts-morph": "^28.0.0",
+    "typebox": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}
