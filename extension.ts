@@ -26,7 +26,6 @@ function ensureProtocolMinimal(): void {
     const targetDir = join(homedir(), ".pi", "agent", "node_modules", "@kyvernitria");
     const target = join(targetDir, "pi-protocol-minimal");
 
-    // 1) Try local repo symlink (development mode — repos coexist)
     const localRepo = join(homedir(), "Applications", "pi", "pi-protocol", "packages", "pi-protocol-minimal");
     if (existsSync(localRepo)) {
       mkdirSync(targetDir, { recursive: true });
@@ -34,7 +33,6 @@ function ensureProtocolMinimal(): void {
       return;
     }
 
-    // 2) Try npm install (production mode — published package)
     const { execSync } = _require("node:child_process");
     mkdirSync(targetDir, { recursive: true });
     execSync("npm install @kyvernitria/pi-protocol-minimal@latest", {
