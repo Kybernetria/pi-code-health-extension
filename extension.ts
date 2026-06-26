@@ -36,17 +36,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * upward resolution through the shared agent-level node_modules.
  */
 function ensureProtocolMinimal(): void {
-  try {
-    _require.resolve("@kyvernitria/pi-protocol-minimal");
-    return;
-  } catch {
-    // Not resolved yet — proceed to install.
-  }
-
   const targetDir = join(__dirname, "node_modules", "@kyvernitria");
   const target = join(targetDir, "pi-protocol-minimal");
 
-  // 1) Local repo symlink (development)
+  // If the symlink or install already exists, we're done.
+  if (existsSync(target)) return;
+
   const localRepo = join(homedir(), "Applications", "pi", "pi-protocol", "packages", "pi-protocol-minimal");
   if (existsSync(localRepo)) {
     mkdirSync(targetDir, { recursive: true });
@@ -54,24 +49,7 @@ function ensureProtocolMinimal(): void {
     return;
   }
 
-  // 2) npm install (production)
   const { execSync } = _require("node:child_process");
   mkdirSync(targetDir, { recursive: true });
-  execSync("npm install @kyvernitria/pi-protocol-minimal@latest", {
-    cwd: __dirname,
-    stdio: "pipe",
-  });
-}
-
-export default function codeHealthExtension(pi: ExtensionAPI) {
-  ensureProtocolMinimal();
-  const { ensureProtocolFabric, registerProtocolManifest } = _require("@kyvernitria/pi-protocol-minimal");
-
-  const manifest = JSON.parse(readFileSync(new URL("./pi.protocol.json", import.meta.url), "utf8"));
-  const fabric = ensureProtocolFabric();
-  fabric.unregister("code_health");
-  registerProtocolManifest(fabric, {
-    manifest,
-    handlers: createCodeHealthProtocolHandlers(),
-  });
+  execSync("npm install @kyvernitria/pi-protocol-minimal@latest", { cwd: __dirname, stdio: "pipe" });
 }
