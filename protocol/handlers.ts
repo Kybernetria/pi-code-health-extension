@@ -1,18 +1,34 @@
+/**
+ * Protocol handlers for pi-code-health-extension.
+ *
+ * Uses lazy dynamic imports for heavy dependencies (ts-morph) so the
+ * extension loads without error even when node_modules are not installed.
+ * Dependencies are only resolved when a provide is actually invoked.
+ */
+
 type ProtocolHandler = (input: unknown) => unknown | Promise<unknown>;
 
-import { scanForCandidates } from "../src/slice/scan.js";
-import { diagnoseCandidate } from "../src/slice/diagnose.js";
-import { generateSlicePlan } from "../src/slice/plan.js";
-import { scanDocHygiene } from "../src/doc-hygiene/scan.js";
 import type { ScanParams, Severity, SliceCandidate, SliceDiagnosis, SmellType } from "../src/slice/types.js";
 import type { DocHygieneScanParams } from "../src/doc-hygiene/types.js";
 
 export function createCodeHealthProtocolHandlers(): Record<string, ProtocolHandler> {
   return {
-    slice_scan: async (input) => scanForCandidates(parseSliceScanInput(input)),
-    slice_diagnose: async (input) => diagnoseCandidate(parseSliceCandidateInput(input)),
-    slice_plan: async (input) => generateSlicePlan(parseSliceDiagnosisInput(input)),
-    doc_hygiene_scan: async (input) => scanDocHygiene(parseDocHygieneScanInput(input)),
+    slice_scan: async (input) => {
+      const { scanForCandidates } = await import("../src/slice/scan.js");
+      return scanForCandidates(parseSliceScanInput(input));
+    },
+    slice_diagnose: async (input) => {
+      const { diagnoseCandidate } = await import("../src/slice/diagnose.js");
+      return diagnoseCandidate(parseSliceCandidateInput(input));
+    },
+    slice_plan: async (input) => {
+      const { generateSlicePlan } = await import("../src/slice/plan.js");
+      return generateSlicePlan(parseSliceDiagnosisInput(input));
+    },
+    doc_hygiene_scan: async (input) => {
+      const { scanDocHygiene } = await import("../src/doc-hygiene/scan.js");
+      return scanDocHygiene(parseDocHygieneScanInput(input));
+    },
   };
 }
 
